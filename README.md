@@ -102,3 +102,67 @@ $ python vis.py \
     --vis_logdir="/mnt/data/dataset/exp/vis/" \
     --dataset_dir="/mnt/data/dataset/cityscapes/tfrecord/"
 ```
+
+## Use container function
+
+The following refers to krosaen's [container-fns](https://gitlab.eecs.umich.edu/umfordav/container-fns)
+
+### Load deeplab image
+
+```
+$ docker build -t deeplab ./docker
+```
+
+### Install python3.6
+
+Python3.6 (based on [these instructions](http://askubuntu.com/a/865569)).
+
+```
+$ sudo add-apt-repository ppa:jonathonf/python-3.6
+$ sudo apt-get update
+$ sudo apt-get install python3.6
+```
+
+Pip:
+
+```
+$ sudo apt install python3-pip
+```
+
+If this doesn't work, use
+
+```
+$ curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python3.6
+```
+
+### Install container-fn
+
+```
+$ git clone https://gitlab.eecs.umich.edu/umfordav/container-fn.git
+$ cd container-fn
+$ sudo python3.6 -m pip install -e .
+$ cd ..
+```
+
+### Set environment variable
+In `~/.bashrc`, add the following line
+
+```
+export CONTAINER_FN_PATH=/home/user/DeeplabDocker/container-fns
+```
+
+change `user` accordingly.
+
+### Test
+
+```
+$ container-fn -h
+```
+
+### Use container-fn to train
+
+```
+container-fn tensorflow-deeplab-train \
+      --dataset-path /mnt/data/deeplab/datasets/cityscapes/tfrecord \
+      --output-path /mnt/data/dataset/exp1
+```
