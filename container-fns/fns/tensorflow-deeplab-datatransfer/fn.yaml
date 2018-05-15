@@ -1,0 +1,27 @@
+id: tensorflow-deeplab-datatransfer
+name: Tensorflow Deeplab transfer data into tfrecord format
+docker-image: deeplab
+
+args:
+  - id: dataset-path
+    help: 'Path to dataset.'
+  - id: output-path
+    help: 'Path to store dataset in tfrecord format.'
+  - id: dataset
+    default: 'cityscapes'
+    help: 'Name of the segmentation dataset.'
+
+docker-volumes:
+  - host-path: "{output-path}"
+    container-path: /media/ngv/output
+    read-only: False
+  - host-path: "{dataset-path}"
+    container-path: /media/ngv/datasets
+
+logfile-path: "{output-path}/deeplab-datatransfer-logs.txt"
+
+command: |
+  python dataprocess.py
+    --dataset {dataset}
+    --output_path /media/ngv/output
+    --data_path /media/ngv/datasets

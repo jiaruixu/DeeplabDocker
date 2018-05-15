@@ -1,22 +1,19 @@
-id: tensorflow-deeplab-train
-name: Tensorflow Deeplab training end2end
+id: tensorflow-deeplab-eval
+name: Tensorflow Deeplab evaluation
 docker-image: deeplab
 
 args:
   - id: dataset-path
     help: 'Path to dataset in tfrecord format.'
+  - id: trained-path
+    help: 'Path to training results.'
   - id: output-path
     help: 'Path to store training results.'
-  - id: training-steps
-    default: 1000
-    help: 'The number of steps used for training.'
-  - id: train-split
-    default: 'train'
+  - id: eval-split
+    default: 'val'
     help: 'Which split of the dataset to be used for training.'
   - id: network
     default: 'xception_65'
-  - id: pretrained-path
-    default: /mnt/ngv/pretrained-networks/deeplabv3
   - id: atrous-rates1
     default: 6
     help: 'Atrous rates1 for atrous spatial pyramid pooling. For `xception_65`, use atrous_rates = [12, 24, 36] if output_stride = 8, or rates = [6, 12, 18] if output_stride = 16. For `mobilenet_v2`, use None.'
@@ -31,52 +28,40 @@ args:
     help: 'The ratio of input to output spatial resolution.'
   - id: decoder-output-stride
     default: 4
-  - id: train-crop-size-height
-    default: 769
+  - id: eval-crop-size-height
+    default: 1025
     help: 'Image crop size height during training'
-  - id: train-crop-size-width
-    default: 769
+  - id: eval-crop-size-width
+    default: 2049
     help: 'Image crop size width during training'
-  - id: train-batch-size
-    default: 1
-    help: 'The number of images in each batch during training. When fine_tune_batch_norm=True, use at least batch size larger than 12'
-  - id: num-clones
-    default: 1
-    help: 'Number of gpus applied for training'
   - id: dataset
     default: 'cityscapes'
     help: 'Name of the segmentation dataset.'
-  - id: fine-tune-batch-norm
-    default: 'False'
-    help: 'Fine tune the batch norm parameters or not. Set to True if one wants to fine-tune the batch norm parameters in DeepLabv3.'
 
 docker-volumes:
   - host-path: "{output-path}"
     container-path: /media/ngv/output
     read-only: False
-  - host-path: "{pretrained-path}"
-    container-path: /media/ngv/pretrained
+  - host-path: "{trained-path}"
+    container-path: /media/ngv/output/train
   - host-path: "{dataset-path}"
-    container-path: /media/ngv/tfrecord
+    container-path: /models/research/deeplab/datasets/cityscapes/tfrecord
 
-logfile-path: "{output-path}/deeplab-training-logs.txt"
+logfile-path: "{output-path}/deeplab-eval-logs.txt"
 
 command: |
-  python train.py
+  python eval.py
     --logtostderr
-    --training_number_of_steps {training-steps}
-    --train_split {train-split}
+    --eval_split {eval-split}
     --model_variant {network}
     --atrous_rates {atrous-rates1}
     --atrous_rates {atrous-rates2}
     --atrous_rates {atrous-rates3}
     --output_stride {output-stride}
     --decoder_output_stride {decoder-output-stride}
-    --train_crop_size {train-crop-size-height}
-    --train_crop_size {train-crop-size-width}
-    --train_batch_size {train-batch-size}
-    --num_clones {num-clones}
+    --eval_crop_size {eval-crop-size-height}
+    --eval_crop_size {eval-crop-size-width}
     --dataset {dataset}
-    --tf_initial_checkpoint /media/ngv/pretrained/deeplabv3_{network}_{dataset}_{train-split}/model.ckpt
-    --train_logdir /media/ngv/output/train
-    --dataset_dir /media/ngv/tfrecord
+    --checkpoint_dir /media/ngv/output/train
+    --eval_logdir /media/ngv/output/eval
+    --dataset_dir /models/research/deeplab/datasets/cityscapes/tfrecord
