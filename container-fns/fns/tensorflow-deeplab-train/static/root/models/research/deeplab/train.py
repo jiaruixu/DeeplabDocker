@@ -133,7 +133,7 @@ flags.DEFINE_float('slow_start_learning_rate', 1e-4,
 
 # Set to True if one wants to fine-tune the batch norm parameters in DeepLabv3.
 # Set to False and use small batch size to save GPU memory.
-flags.DEFINE_boolean('fine_tune_batch_norm', False,
+flags.DEFINE_string('fine_tune_batch_norm', 'True',
                      'Fine tune the batch norm parameters or not.')
 
 flags.DEFINE_float('min_scale_factor', 0.5,
@@ -163,6 +163,8 @@ flags.DEFINE_string('train_split', 'train',
 
 flags.DEFINE_string('dataset_dir', None, 'Where the dataset reside.')
 
+def _str2bool(var_string):
+    return var_string in ("true", "True")
 
 def _build_deeplab(inputs_queue, outputs_to_num_classes, ignore_label):
   """Builds a clone of DeepLab.
@@ -199,7 +201,7 @@ def _build_deeplab(inputs_queue, outputs_to_num_classes, ignore_label):
       image_pyramid=FLAGS.image_pyramid,
       weight_decay=FLAGS.weight_decay,
       is_training=True,
-      fine_tune_batch_norm=FLAGS.fine_tune_batch_norm)
+      fine_tune_batch_norm=_str2bool(FLAGS.fine_tune_batch_norm))
 
   # add name to graph node so we can add to summary
   outputs_to_scales_to_logits[common.OUTPUT_TYPE][model._MERGED_LOGITS_SCOPE] = tf.identity(
@@ -222,7 +224,7 @@ def _build_deeplab(inputs_queue, outputs_to_num_classes, ignore_label):
 
 def main(unused_argv):
   tf.logging.set_verbosity(tf.logging.INFO)
-  tf.logging.info('Fune tune info = ' + str(FLAGS.fine_tune_batch_norm) )
+  tf.logging.info('Fune tune info = ' + str(_str2bool(FLAGS.fine_tune_batch_norm)) )
   # Set up deployment (i.e., multi-GPUs and/or multi-replicas).
   config = model_deploy.DeploymentConfig(
       num_clones=FLAGS.num_clones,

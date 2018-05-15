@@ -75,6 +75,7 @@ command: |
     --train_crop_size {train-crop-size-height}
     --train_crop_size {train-crop-size-width}
     --train_batch_size {train-batch-size}
+    --fine_tune_batch_norm {fine-tune-batch-norm}
     --num_clones {num-clones}
     --dataset {dataset}
     --tf_initial_checkpoint /media/ngv/pretrained/deeplabv3_{network}_{dataset}_{train-split}/model.ckpt
