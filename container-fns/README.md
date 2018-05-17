@@ -4,7 +4,7 @@
 $ docker build -t deeplab ./docker
 ```
 
-## Train on Cityscapes dataset
+## Use Cityscapes dataset
 For Cityscapes, the recommended directory structure is
 
 ```
@@ -14,11 +14,23 @@ dataset-path: some/path/to/cityscapes
     + gtFine
 ```
 
-The output directory structure is
+The output directory structure will be
 
 ```
 output-path: some/path/to/output
 + output
+    + tfrecord
+    + train_on_train_set
+        + train
+        + eval
+        + vis
+```
+
+For example, the output path here would be
+
+```
+output-path: /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/cityscapes
++ 2018-05-09-tensorflow-deeplab-test/cityscapes
     + tfrecord
     + train_on_train_set
         + train
@@ -61,7 +73,7 @@ container-fn tensorflow-deeplab-vis \
       --output-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/cityscapes/train_on_train_set
 ```
 
-## Train on PASCAL VOC 2012 dataset
+## Use PASCAL VOC 2012 dataset
 For PASCAL VOC 2012, the recommended directory structure is
 
 ```
@@ -72,7 +84,7 @@ dataset-path: some/path/to/VOCdevkit
       + SegmentationClass
 ```
 
-The output directory structure is
+The output directory structure will be
 
 ```
 output-path: some/path/to/output
