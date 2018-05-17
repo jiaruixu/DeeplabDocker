@@ -28,7 +28,7 @@ output-path: some/path/to/output
 
 ### Use container-fn to convert dataset into tfrecord
 
-Note:these examples assume you have mounted shore at `/mnt/ngv` per instructions [here](https://gitlab.eecs.umich.edu/umfordav/ngv-wiki/wikis/home).
+Note: these examples assume you have mounted shore at `/mnt/fcav` refering to instructions [here](https://gitlab.eecs.umich.edu/umfordav/ngv-wiki/wikis/home).
 ```
 container-fn tensorflow-deeplab-datatransfer \
       --dataset cityscapes \
