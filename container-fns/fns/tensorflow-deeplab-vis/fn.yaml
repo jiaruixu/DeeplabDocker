@@ -37,6 +37,9 @@ args:
   - id: dataset
     default: 'cityscapes'
     help: 'Name of the segmentation dataset.'
+  - id: colormap-type
+    default: 'cityscapes'
+    help: 'Visualization colormap type.'
 
 docker-volumes:
   - host-path: "{output-path}"
@@ -62,7 +65,7 @@ command: |
     --vis_crop_size {vis-crop-size-height}
     --vis_crop_size {vis-crop-size-width}
     --dataset {dataset}
-    --colormap_type {dataset}
+    --colormap_type {colormap-type}
     --checkpoint_dir /media/ngv/output/train
     --vis_logdir /media/ngv/output/vis
     --dataset_dir /models/research/deeplab/datasets/cityscapes/tfrecord

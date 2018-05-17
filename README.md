@@ -3,166 +3,133 @@
 ```
 $ docker build -t deeplab ./docker
 ```
-## Symlink the following directories
-```
-$ ln -s /mnt/data/dataset/exp/train
-$ ln -s /mnt/data/dataset/exp/eval
-$ ln -s /mnt/data/dataset/exp/vis
-```
 
-Dataset directory structure:
+## Cityscapes
+For Cityscapes, the recommended directory structure is
 
 ```
-+ dataset
-  + cityscapes
+dataset-path: some/path/to/cityscapes
++ cityscapes
     + leftImg8bit
     + gtFine
+```
+
+The output directory structure is
+
+```
+output-path: some/path/to/output
++ output
     + tfrecord
-  + exp
-    + train
-    + eval
-    + vis
-```
-## Start container
-```
-$ . run.sh
-```
-## Download the initial model
-
-```
-# From /models/research/deeplab/
-$ mkdir -p init_models
-$ cd init_models
-$ wget http://download.tensorflow.org/models/deeplabv3_cityscapes_train_2018_02_06.tar.gz
-$ tar zxf deeplabv3_cityscapes_train_2018_02_06.tar.gz
-$ cd ..
+    + train_on_train_set
+        + train
+        + eval
+        + vis
 ```
 
-## To train
+### Use container-fn to convert dataset into tfrecord
+
+Note:these examples assume you have mounted shore at `/mnt/ngv` per instructions [here](https://gitlab.eecs.umich.edu/umfordav/ngv-wiki/wikis/home).
 ```
-# From /models/research/deeplab/
-$ python train.py \
-    --logtostderr \
-    --training_number_of_steps=30000 \
-    --train_split="train" \
-    --model_variant="xception_65" \
-    --atrous_rates=6 \
-    --atrous_rates=12 \
-    --atrous_rates=18 \
-    --output_stride=16 \
-    --decoder_output_stride=4 \
-    --train_crop_size=769 \
-    --train_crop_size=769 \
-    --train_batch_size=2 \
-    --num_clones=2 \
-    --dataset="cityscapes" \
-    --fine_tune_batch_norm=false \
-    --tf_initial_checkpoint="init_models/deeplabv3_cityscapes_train/model.ckpt" \
-    --train_logdir="/mnt/data/dataset/exp/train" \
-    --dataset_dir="/mnt/data/dataset/cityscapes/tfrecord/"
-```
-
-## To evaluate
-```
-# From /models/research/deeplab/
-$ python eval.py \
-    --logtostderr \
-    --eval_split="val" \
-    --model_variant="xception_65" \
-    --atrous_rates=6 \
-    --atrous_rates=12 \
-    --atrous_rates=18 \
-    --output_stride=16 \
-    --decoder_output_stride=4 \
-    --eval_crop_size=1025 \
-    --eval_crop_size=2049 \
-    --dataset="cityscapes" \
-    --checkpoint_dir="/mnt/data/dataset/exp/train/" \
-    --eval_logdir="/mnt/data/dataset/exp/eval/" \
-    --dataset_dir="/mnt/data/dataset/cityscapes/tfrecord/"
-```
-
-## To visualize
-```
-# From /models/research/deeplab/
-$ python vis.py \
-    --logtostderr \
-    --vis_split="val" \
-    --model_variant="xception_65" \
-    --atrous_rates=6 \
-    --atrous_rates=12 \
-    --atrous_rates=18 \
-    --output_stride=16 \
-    --decoder_output_stride=4 \
-    --vis_crop_size=1025 \
-    --vis_crop_size=2049 \
-    --dataset="cityscapes" \
-    --colormap_type="cityscapes" \
-    --checkpoint_dir="/mnt/data/dataset/exp/train/" \
-    --vis_logdir="/mnt/data/dataset/exp/vis/" \
-    --dataset_dir="/mnt/data/dataset/cityscapes/tfrecord/"
-```
-
-## Use container function
-
-The following refers to krosaen's [container-fns](https://gitlab.eecs.umich.edu/umfordav/container-fns)
-
-### Load deeplab image
-
-```
-$ docker build -t deeplab ./docker
-```
-
-### Install python3.6
-
-Python3.6 (based on [these instructions](http://askubuntu.com/a/865569)).
-
-```
-$ sudo add-apt-repository ppa:jonathonf/python-3.6
-$ sudo apt-get update
-$ sudo apt-get install python3.6
-```
-
-Pip:
-
-```
-$ sudo apt install python3-pip
-```
-
-If this doesn't work, use
-
-```
-$ curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python3.6
-```
-
-### Install container-fn
-
-```
-$ git clone https://gitlab.eecs.umich.edu/umfordav/container-fn.git
-$ cd container-fn
-$ sudo python3.6 -m pip install -e .
-$ cd ..
-```
-
-### Set environment variable
-In `~/.bashrc`, add the following line
-
-```
-export CONTAINER_FN_PATH=/home/user/DeeplabDocker/container-fns
-```
-
-change `user` accordingly.
-
-### Test
-
-```
-$ container-fn -h
+container-fn tensorflow-deeplab-datatransfer \
+      --dataset cityscapes \
+      --dataset-path /mnt/fcav/datasets/cityscapes \
+      --output-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/cityscapes
 ```
 
 ### Use container-fn to train
 
 ```
 container-fn tensorflow-deeplab-train \
-      --dataset-path /mnt/data/deeplab/datasets/cityscapes/tfrecord \
-      --output-path /mnt/data/dataset/exp1
+      --pretrained-path /mnt/ngv/pretrained-networks/deeplabv3/deeplabv3_xception_65_cityscapes_train \
+      --dataset-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/cityscapes/tfrecord \
+      --output-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/cityscapes/train_on_train_set
+```
+
+### Use container-fn to evaluate
+```
+container-fn tensorflow-deeplab-eval \
+      --dataset-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/cityscapes/tfrecord \
+      --trained-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/cityscapes/train_on_train_set/train \
+      --output-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/cityscapes/train_on_train_set
+```
+
+### Use container-fn to visualize
+```
+container-fn tensorflow-deeplab-vis \
+      --dataset-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/cityscapes/tfrecord \
+      --trained-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/cityscapes/train_on_train_set/train \
+      --output-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/cityscapes/train_on_train_set
+```
+
+## PASCAL VOC 2012
+For PASCAL VOC 2012, the recommended directory structure is
+
+```
+dataset-path: some/path/to/VOCdevkit
++ VOCdevkit
+    + VOC2012
+      + JPEGImages
+      + SegmentationClass
+```
+
+The output directory structure is
+
+```
+output-path: some/path/to/output
++ output
+    + VOC2012
+        + SegmentationClassRaw
+    + tfrecord
+    + train_on_train_set
+        + train
+        + eval
+        + vis
+```
+### Use container-fn to convert dataset into tfrecord
+
+Note: these examples assume you have mounted shore at `/mnt/ngv` per instructions [here](https://gitlab.eecs.umich.edu/umfordav/ngv-wiki/wikis/home).
+```
+container-fn tensorflow-deeplab-datatransfer \
+      --dataset pascal_voc_seg \
+      --dataset-path /mnt/ngv/datasets/VOC/VOCdevkit \
+      --output-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/pascal
+```
+
+If `dataset-path` is set as `None`, the container-fn will automatically download PASCAL VOC 2012 dataset to the `output-path` and convert it to tfrecord format. If `dataset-path` is set as `some/path/to/VOCdevkit`, then container-fn will only convert it to tfrecord format.
+
+### Use container-fn to train
+
+```
+container-fn tensorflow-deeplab-train \
+      --train-split trainval \
+      --dataset pascal_voc_seg \
+      --training-steps 1000 \
+      --train-crop-size-height 513 \
+      --train-crop-size-width 513 \
+      --pretrained-path /mnt/ngv/pretrained-networks/deeplabv3/deeplabv3_xception_65_pascal_voc_seg_trainval \
+      --dataset-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/pascal/tfrecord \
+      --output-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/pascal/train_on_train_set
+```
+
+### Use container-fn to evaluate
+```
+container-fn tensorflow-deeplab-eval \
+      --dataset pascal_voc_seg \
+      --eval-crop-size-height 513 \
+      --eval-crop-size-width 513 \
+      --dataset-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/pascal/tfrecord \
+      --trained-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/pascal/train_on_train_set/train \
+      --output-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/pascal/train_on_train_set
+```
+
+### Use container-fn to visualize
+```
+container-fn tensorflow-deeplab-vis \
+      --dataset pascal_voc_seg \
+      --vis-crop-size-height 513 \
+      --vis-crop-size-width 513 \
+      --colormap-type pascal \
+      --dataset-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/pascal/tfrecord \
+      --trained-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/pascal/train_on_train_set/train \
+      --output-path /mnt/ngv/training-runs/2018-05-09-tensorflow-deeplab-test/pascal/train_on_train_set
 ```

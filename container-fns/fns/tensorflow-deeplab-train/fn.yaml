@@ -16,7 +16,7 @@ args:
   - id: network
     default: 'xception_65'
   - id: pretrained-path
-    default: /mnt/ngv/pretrained-networks/deeplabv3
+    help: 'Path to pretrained models'
   - id: atrous-rates1
     default: 6
     help: 'Atrous rates1 for atrous spatial pyramid pooling. For `xception_65`, use atrous_rates = [12, 24, 36] if output_stride = 8, or rates = [6, 12, 18] if output_stride = 16. For `mobilenet_v2`, use None.'
@@ -49,6 +49,21 @@ args:
   - id: fine-tune-batch-norm
     default: 'False'
     help: 'Fine tune the batch norm parameters or not. Set to True if one wants to fine-tune the batch norm parameters in DeepLabv3.'
+  - id: last-layers-contain-logits-only
+    default: 'False'
+    help: 'Only consider logits as last layers or not.'
+  - id: initialize-last-layer
+    default: 'True'
+    help: 'Initialize the last layer.'
+  - id: resize-factor
+    default: 0
+    help: 'Resized dimensions are multiple of factor plus one.'
+  - id: min-resize-value
+    default: 0
+    help: 'Desired size of the smaller image side.'
+  - id: max-resize-value
+    default: 0
+    help: 'Maximum allowed size of the larger image side.'
 
 docker-volumes:
   - host-path: "{output-path}"
@@ -78,6 +93,11 @@ command: |
     --fine_tune_batch_norm {fine-tune-batch-norm}
     --num_clones {num-clones}
     --dataset {dataset}
-    --tf_initial_checkpoint /media/ngv/pretrained/deeplabv3_{network}_{dataset}_{train-split}/model.ckpt
+    --last_layers_contain_logits_only {last-layers-contain-logits-only}
+    --initialize_last_layer {initialize-last-layer}
+    --resize_factor {resize-factor}
+    --min_resize_value {min-resize-value}
+    --max_resize_value {max-resize-value}
+    --tf_initial_checkpoint /media/ngv/pretrained/model.ckpt
     --train_logdir /media/ngv/output/train
     --dataset_dir /media/ngv/tfrecord

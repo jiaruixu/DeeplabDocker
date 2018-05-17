@@ -119,10 +119,10 @@ flags.DEFINE_string('tf_initial_checkpoint', None,
                     'The initial checkpoint in tensorflow format.')
 
 # Set to False if one does not want to re-use the trained classifier weights.
-flags.DEFINE_boolean('initialize_last_layer', True,
+flags.DEFINE_string('initialize_last_layer', 'True',
                      'Initialize the last layer.')
 
-flags.DEFINE_boolean('last_layers_contain_logits_only', False,
+flags.DEFINE_string('last_layers_contain_logits_only', 'False',
                      'Only consider logits as last layers or not.')
 
 flags.DEFINE_integer('slow_start_step', 0,
@@ -224,7 +224,13 @@ def _build_deeplab(inputs_queue, outputs_to_num_classes, ignore_label):
 
 def main(unused_argv):
   tf.logging.set_verbosity(tf.logging.INFO)
-  tf.logging.info('Fune tune info = ' + str(_str2bool(FLAGS.fine_tune_batch_norm)) )
+  if FLAGS.min_resize_value == 0:
+      FLAGS.min_resize_value = None
+  if FLAGS.max_resize_value == 0:
+      FLAGS.max_resize_value = None
+  if FLAGS.resize_factor == 0:
+      FLAGS.resize_factor = None
+
   # Set up deployment (i.e., multi-GPUs and/or multi-replicas).
   config = model_deploy.DeploymentConfig(
       num_clones=FLAGS.num_clones,
@@ -329,7 +335,7 @@ def main(unused_argv):
       summaries.add(tf.summary.scalar('total_loss', total_loss))
 
       # Modify the gradients for biases and last layer variables.
-      last_layers = model.get_extra_layer_scopes(FLAGS.last_layers_contain_logits_only)
+      last_layers = model.get_extra_layer_scopes(_str2bool(FLAGS.last_layers_contain_logits_only))
       grad_mult = train_utils.get_model_gradient_multipliers(
           last_layers, FLAGS.last_layer_gradient_multiplier)
       if grad_mult:
@@ -369,7 +375,7 @@ def main(unused_argv):
         init_fn=train_utils.get_model_init_fn(
             FLAGS.train_logdir,
             FLAGS.tf_initial_checkpoint,
-            FLAGS.initialize_last_layer,
+            _str2bool(FLAGS.initialize_last_layer),
             last_layers,
             ignore_missing_vars=True),
         summary_op=summary_op,

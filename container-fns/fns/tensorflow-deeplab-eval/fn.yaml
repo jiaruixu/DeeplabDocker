@@ -30,13 +30,22 @@ args:
     default: 4
   - id: eval-crop-size-height
     default: 1025
-    help: 'Image crop size height during training'
+    help: 'Image crop size height during evaluation'
   - id: eval-crop-size-width
     default: 2049
-    help: 'Image crop size width during training'
+    help: 'Image crop size width during evaluation'
   - id: dataset
     default: 'cityscapes'
     help: 'Name of the segmentation dataset.'
+  - id: resize-factor
+    default: 0
+    help: 'Resized dimensions are multiple of factor plus one.'
+  - id: min-resize-value
+    default: 0
+    help: 'Desired size of the smaller image side.'
+  - id: max-resize-value
+    default: 0
+    help: 'Maximum allowed size of the larger image side.'
 
 docker-volumes:
   - host-path: "{output-path}"
@@ -62,6 +71,9 @@ command: |
     --eval_crop_size {eval-crop-size-height}
     --eval_crop_size {eval-crop-size-width}
     --dataset {dataset}
+    --resize_factor {resize-factor}
+    --min_resize_value {min-resize-value}
+    --max_resize_value {max-resize-value}
     --checkpoint_dir /media/ngv/output/train
     --eval_logdir /media/ngv/output/eval
     --dataset_dir /models/research/deeplab/datasets/cityscapes/tfrecord
